@@ -33,6 +33,18 @@
   data-category-id="{{ category_id }}"
   data-allow-duplicates="{{ allow_duplicates }}"
 >
+  <a
+    href="{{ product_url }}"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="byo-box-product-link"
+    aria-label="Open {{ product_title }} in new tab"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+      <path d="M10 3h3v3M13 3l-6 6M7 3H3v10h10V9"/>
+    </svg>
+  </a>
+
   {%- if product_image -%}
     <div class="byo-box-product-image">
       <img
@@ -215,6 +227,38 @@
     font-size: 14px;
     background: rgba(var(--color-foreground), 0.05);
     border-radius: 6px;
+  }
+
+  .byo-box-product-link {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--color-background), 0.9);
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 6px;
+    color: rgba(var(--color-foreground), 0.6);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    z-index: 1;
+  }
+
+  .byo-box-product-link:hover {
+    background: rgb(var(--color-button));
+    border-color: rgb(var(--color-button));
+    color: rgb(var(--color-background));
+    transform: scale(1.05);
+  }
+
+  .byo-box-product-link svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 1.5;
   }
 
   @media screen and (max-width: 749px) {

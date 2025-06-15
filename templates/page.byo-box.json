@@ -1,0 +1,135 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+ {
+    "sections": {
+      "main": {
+        "type": "main-page",
+        "disabled": true,
+        "settings": {
+          "padding_top": 36,
+          "padding_bottom": 36
+        }
+      },
+      "byo_box_builder_VyjBXV": {
+        "type": "byo-box-builder",
+        "blocks": {
+          "box_configuration_trjb3q": {
+            "type": "box_configuration",
+            "settings": {
+              "box_name": "Bath Bomb Box",
+              "box_description": "Choose your favorite bath bomb scents",
+              "box_image": "shopify://shop_images/GiftSet-FizzyHalfDozen-2024_5000x_9b9497eb-b38e-45d8-b5de-18bd52e35b8d.webp",
+              "box_fee": 1,
+              "is_featured": false,
+              "category_1_name": "Bath Bombs",
+              "category_1_collection": "bath-bombs",
+              "category_1_label": "Choose 4-6 bath bombs",
+              "category_1_min": 4,
+              "category_1_max": 6,
+              "category_1_allow_duplicates": true,
+              "category_1_sort": "title",
+              "category_2_name": "",
+              "category_2_collection": "",
+              "category_2_label": "",
+              "category_2_min": 0,
+              "category_2_max": 3,
+              "category_2_allow_duplicates": true,
+              "category_2_sort": "title",
+              "category_3_name": "",
+              "category_3_collection": "",
+              "category_3_label": "",
+              "category_3_min": 0,
+              "category_3_max": 2,
+              "category_3_allow_duplicates": true,
+              "category_3_sort": "title"
+            }
+          },
+          "box_configuration_7K7QAz": {
+            "type": "box_configuration",
+            "settings": {
+              "box_name": "Perfect Pair Gift Set",
+              "box_description": "The perfect combination for daily care",
+              "box_image": "shopify://shop_images/GiftSet-ThePerfectPair-VanCo-2024_5000x_48dc0b5a-87c6-44d6-b557-d0db3d6dca2c.webp",
+              "box_fee": 1,
+              "is_featured": true,
+              "category_1_name": "Everything Wash",
+              "category_1_collection": "body-wash",
+              "category_1_label": "Choose 1 Everything Wash",
+              "category_1_min": 1,
+              "category_1_max": 1,
+              "category_1_allow_duplicates": false,
+              "category_1_sort": "title",
+              "category_2_name": "Daily Oat Lotion",
+              "category_2_collection": "lotions-moisturizers",
+              "category_2_label": "Choose 1 Daily Oat Lotion",
+              "category_2_min": 1,
+              "category_2_max": 1,
+              "category_2_allow_duplicates": false,
+              "category_2_sort": "title",
+              "category_3_name": "",
+              "category_3_collection": "",
+              "category_3_label": "",
+              "category_3_min": 0,
+              "category_3_max": 2,
+              "category_3_allow_duplicates": true,
+              "category_3_sort": "title"
+            }
+          },
+          "box_configuration_AcF4Qq": {
+            "type": "box_configuration",
+            "settings": {
+              "box_name": "Soap Set",
+              "box_description": "Find a selection of bar soap",
+              "box_image": "shopify://shop_images/GiftSet-TheLittleThings-Energizing-2024_2000x_689fadd9-b545-4ba2-bf8d-c7022d2916d4.webp",
+              "box_fee": 1,
+              "is_featured": false,
+              "category_1_name": "Everything Wash",
+              "category_1_collection": "bar-soap",
+              "category_1_label": "Choose Up to 4 Bar Soaps",
+              "category_1_min": 1,
+              "category_1_max": 4,
+              "category_1_allow_duplicates": true,
+              "category_1_sort": "title",
+              "category_2_name": "",
+              "category_2_collection": "",
+              "category_2_label": "",
+              "category_2_min": 0,
+              "category_2_max": 0,
+              "category_2_allow_duplicates": false,
+              "category_2_sort": "title",
+              "category_3_name": "",
+              "category_3_collection": "",
+              "category_3_label": "",
+              "category_3_min": 0,
+              "category_3_max": 0,
+              "category_3_allow_duplicates": true,
+              "category_3_sort": "title"
+            }
+          }
+        },
+        "block_order": [
+          "box_configuration_trjb3q",
+          "box_configuration_7K7QAz",
+          "box_configuration_AcF4Qq"
+        ],
+        "name": "BYO Box Builder",
+        "settings": {
+          "section_title": "Build Your Own Box",
+          "section_description": "Create your perfect combination of products",
+          "layout_style": "grid"
+        }
+      }
+    },
+    "order": [
+      "main",
+      "byo_box_builder_VyjBXV"
+    ]
+  }
+  

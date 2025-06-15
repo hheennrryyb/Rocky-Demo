@@ -163,8 +163,7 @@
 
   .byo-box-content {
     padding: 32px 64px;
-    padding-bottom: 120px;
-    min-height: 100vh;
+    min-height: 60vh;
     max-width: 1400px;
     margin: 0 auto;
   }
@@ -300,7 +299,7 @@
   }
 
   .byo-box-categories {
-    margin-bottom: 120px; /* Space for fixed bottom bar */
+    margin-bottom: 220px; /* Space for fixed bottom bar */
   }
 
   /* Category wrapper to maintain proper structure */
@@ -450,24 +449,9 @@
     background: linear-gradient(90deg, #20c997, #17a2b8);
   }
 
-  /* Selection Ripple Animation */
-  .selection-ripple {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: rgba(var(--color-button), 0.3);
-    transform: translate(-50%, -50%);
-    animation: rippleExpand 0.6s ease-out;
-    pointer-events: none;
-    z-index: 10;
-  }
-
   /* Enhanced Add to Cart Button States */
   .byo-box-add-to-cart-btn.ready {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: linear-gradient(135deg, #27ae60, #1e8449);
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
   }
 
@@ -511,7 +495,6 @@
     position: relative;
     display: inline-block;
     margin-right: 8px;
-    margin-bottom: 8px;
   }
 
   .byo-box-summary-product-thumb img {
@@ -560,7 +543,7 @@
   }
 
   .byo-box-selection-bar {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
@@ -580,19 +563,6 @@
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @keyframes rippleExpand {
-    0% {
-      width: 20px;
-      height: 20px;
-      opacity: 0.8;
-    }
-    100% {
-      width: 200px;
-      height: 200px;
-      opacity: 0;
     }
   }
 
@@ -621,7 +591,7 @@
     }
 
     .byo-box-categories {
-      margin-bottom: 140px; /* More space on mobile */
+      margin-bottom: 350px; /* More space on mobile */
     }
 
     /* Mobile category styles */
@@ -697,7 +667,6 @@
     .byo-box-product-card,
     .byo-box-qty-btn,
     .byo-box-back-btn,
-    .selection-ripple,
     .byo-box-add-to-cart-btn.ready {
       animation: none;
       transition: none;

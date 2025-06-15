@@ -1,6 +1,5 @@
 /**
- * BYO Box Builder JavaScript - Step 2 Enhanced Version
- * Advanced state management, validation engine, and user interactions
+ * BYO Box Builder JavaScript 
  */
 
 class BYOBoxBuilder {
@@ -50,10 +49,7 @@ class BYOBoxBuilder {
       this.initializeValidationEngine();
       this.setupProgressTracking();
       this.updateAllUI();
-
-      console.log('BYO Box Builder Enhanced (Step 2) initialized for section:', this.sectionId);
     } catch (error) {
-      console.error('Error during BYO Box Builder initialization:', error);
       this.showContent(); // Show content even on error
       throw error;
     }
@@ -71,8 +67,6 @@ class BYOBoxBuilder {
   checkForURLParameter() {
     const urlParams = new URLSearchParams(window.location.search);
     const selectedBoxName = urlParams.get('selected_box');
-    
-    console.log('DEBUG: URL parameter selected_box =', selectedBoxName);
     
     if (selectedBoxName) {
       this.showProductSelection(selectedBoxName);
@@ -143,8 +137,6 @@ class BYOBoxBuilder {
       fee: boxFee
     };
     this.state.boxFee = boxFee;
-
-    console.log('DEBUG: Loaded box configuration:', this.state.boxConfiguration);
   }
 
   showSelectedBoxCategories(boxConfigData) {
@@ -154,13 +146,10 @@ class BYOBoxBuilder {
       return;
     }
 
-    // Clear all existing categories from the main container
-    console.log('DEBUG: Clearing existing categories from main container');
     mainCategoriesContainer.innerHTML = '';
 
     // Get categories for the selected box and add them to the main container
     const categoryDataElements = boxConfigData.querySelectorAll('.byo-box-category-data');
-    console.log(`DEBUG: Found ${categoryDataElements.length} category data elements for selected box`);
     
     categoryDataElements.forEach((categoryData, index) => {
       const categorySection = categoryData.querySelector('.byo-box-category-section');
@@ -174,14 +163,8 @@ class BYOBoxBuilder {
         
         // Add to main container
         mainCategoriesContainer.appendChild(clonedCategorySection);
-        
-        console.log(`DEBUG: Added category ${index + 1} (${categorySection.dataset.categoryId}) to main container`);
-      } else {
-        console.log(`DEBUG: No category section found in category data element ${index + 1}`);
       }
     });
-
-    console.log(`DEBUG: Successfully populated main container with ${mainCategoriesContainer.children.length} categories`);
   }
 
   loadBoxConfiguration() {
@@ -201,12 +184,7 @@ class BYOBoxBuilder {
   setupEventListeners() {
     // Enhanced event delegation with better performance
     this.section.addEventListener('click', this.handleClick.bind(this));
-    this.section.addEventListener('keydown', this.handleKeydown.bind(this));
     
-    // Add visual feedback for interactions
-    this.section.addEventListener('mouseenter', this.handleMouseEnter.bind(this), true);
-    this.section.addEventListener('mouseleave', this.handleMouseLeave.bind(this), true);
-
     // Add window events for cleanup and state persistence
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
     
@@ -248,50 +226,12 @@ class BYOBoxBuilder {
     }
   }
 
-  handleKeydown(e) {
-    // Keyboard accessibility for quantity controls
-    if (e.target.matches('.byo-box-qty-btn')) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        this.handleQuantityChange(e.target);
-      }
-    }
-
-    // Keyboard shortcuts
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case 'z':
-          if (this.state.selectionHistory.length > 0) {
-            e.preventDefault();
-            this.undoLastSelection();
-          }
-          break;
-      }
-    }
-  }
-
-  handleMouseEnter(e) {
-    const productCard = e.target.closest('.byo-box-product-card');
-    if (productCard) {
-      this.showProductPreview(productCard);
-    }
-  }
-
-  handleMouseLeave(e) {
-    const productCard = e.target.closest('.byo-box-product-card');
-    if (productCard) {
-      this.hideProductPreview(productCard);
-    }
-  }
-
-    loadCategoryLimits() {
+  loadCategoryLimits() {
     // Only load categories that are currently visible (not hidden)
     const categoryElements = this.section.querySelectorAll('.byo-box-category-section:not([style*="display: none"])');
 
-    console.log('categoryElements (visible only):', categoryElements);
     
     if (categoryElements.length === 0) {
-      console.log('No visible category sections found - likely on box selection page');
       return;
     }
     
@@ -301,13 +241,7 @@ class BYOBoxBuilder {
       const titleEl = categoryEl.querySelector('.byo-box-category-title h4');
       const optionalEl = categoryEl.querySelector('.byo-box-category-optional');
       
-      console.log(`DEBUG: Processing category element:`, {
-        categoryId,
-        hasCounter: !!counterEl,
-        counterText: counterEl?.textContent,
-        title: titleEl?.textContent?.trim(),
-        hasOptional: !!optionalEl
-      });
+      
       
       if (counterEl && categoryId) {
         const { min, max } = this.parseMinMaxConstraints(counterEl.textContent);
@@ -322,21 +256,14 @@ class BYOBoxBuilder {
           name: titleEl?.textContent?.trim() || categoryId
         };
         
-        console.log(`DEBUG: Adding category ${categoryId}:`, categoryData);
-        
         this.state.categoryLimits.set(categoryId, categoryData);
         this.state.selectedProducts.set(categoryId, new Map());
         this.state.validationErrors.set(categoryId, null);
-      } else {
-        console.log(`DEBUG: Skipping category - missing counter or ID:`, { categoryId, hasCounter: !!counterEl });
       }
     });
-    
-    console.log(`Loaded ${this.state.categoryLimits.size} categories`);
   }
 
   clearCategoryLimits() {
-    console.log('DEBUG: Clearing category limits');
     this.state.categoryLimits.clear();
     this.state.selectedProducts.clear();
     this.state.validationErrors.clear();
@@ -381,31 +308,25 @@ class BYOBoxBuilder {
         return allowDuplicates || !productData || productData.quantity <= 1;
       },
       overallCompletion: () => {
-        console.log('DEBUG: Overall completion check');
-        console.log('DEBUG: Category limits:', this.state.categoryLimits);
-        
         // Check if we have any categories loaded
         if (this.state.categoryLimits.size === 0) {
-          console.log('DEBUG: No categories loaded, validation fails');
           return false;
         }
         
         // Check each category
         const results = Array.from(this.state.categoryLimits.entries()).map(([categoryId, limits]) => {
           const isValid = limits.isOptional || limits.current >= limits.min;
-          console.log(`DEBUG: Category ${categoryId} (${limits.name}): current=${limits.current}, min=${limits.min}, optional=${limits.isOptional}, valid=${isValid}`);
           return { categoryId, isValid, limits };
         });
         
         const allValid = results.every(result => result.isValid);
-        console.log('DEBUG: Overall validation result:', allValid);
         
         return allValid;
       }
     };
 
     this.errorMessages = {
-      categoryMinimum: (categoryName, min) => `Please select at least ${min} ${categoryName.toLowerCase()}`,
+      // categoryMinimum: (categoryName, min) => `Please select at least ${min} ${categoryName.toLowerCase()}`,
       categoryMaximum: (categoryName, max) => `Cannot select more than ${max} ${categoryName.toLowerCase()}`,
       duplicateProducts: (productName) => `Duplicates not allowed for ${productName}`,
       overallIncomplete: 'Please complete all required categories'
@@ -435,8 +356,6 @@ class BYOBoxBuilder {
     const categoryId = productCard.dataset.categoryId;
     const allowDuplicates = productCard.dataset.allowDuplicates === 'true';
     
-    // Save current state for undo functionality
-    this.saveStateToHistory();
     
     const result = this.updateProductQuantity(productId, variantId, categoryId, action, allowDuplicates, productCard);
     
@@ -446,7 +365,6 @@ class BYOBoxBuilder {
       this.updateCategoryProgress(categoryId);
       this.validateCategory(categoryId);
       this.updateSummary();
-      this.announceChange(result.announcement);
     } else {
       this.showValidationError(categoryId, result.error);
     }
@@ -511,17 +429,10 @@ class BYOBoxBuilder {
 
       categoryLimits.current += qtyDiff;
 
-      const announcement = this.createQuantityAnnouncement(
-        titleEl?.textContent || 'Product', 
-        newQty, 
-        action
-      );
-
       return { 
         success: true, 
         newQuantity: newQty, 
-        quantityDiff: qtyDiff,
-        announcement 
+        quantityDiff: qtyDiff 
       };
     }
 
@@ -544,7 +455,6 @@ class BYOBoxBuilder {
     // Enhanced visual feedback
     if (quantity > 0) {
       productCard.classList.add('selected');
-      this.addSelectionRipple(productCard);
     } else {
       productCard.classList.remove('selected');
     }
@@ -555,7 +465,6 @@ class BYOBoxBuilder {
     const allowDuplicates = productCard.dataset.allowDuplicates === 'true';
     
     if (categoryLimits) {
-      console.log('DEBUG: Category limits:', categoryLimits);
       increaseBtn.disabled = 
         categoryLimits.current >= categoryLimits.max || 
         (!allowDuplicates && quantity > 0);
@@ -565,21 +474,18 @@ class BYOBoxBuilder {
   validateCategory(categoryId) {
     const limits = this.state.categoryLimits.get(categoryId);
     if (!limits) {
-      console.log(`DEBUG: Category ${categoryId} not found in limits`);
       return;
     }
 
     let error = null;
 
-    console.log(`DEBUG: Validating category ${categoryId}: current=${limits.current}, min=${limits.min}, max=${limits.max}, optional=${limits.isOptional}, dirty=${this.state.isDirty}`);
-
     // Check minimum requirement (only show error if not optional and user has started selecting)
-    if (!limits.isOptional && limits.current < limits.min && this.state.isDirty) {
-      error = this.errorMessages.categoryMinimum(limits.name, limits.min);
-      console.log(`DEBUG: Category ${categoryId} minimum error:`, error);
-    }
+    // if (!limits.isOptional && limits.current < limits.min && this.state.isDirty) {
+    //   error = this.errorMessages.categoryMinimum(limits.name, limits.min);
+    //   console.log(`DEBUG: Category ${categoryId} minimum error:`, error);
+    // }
     // Check maximum constraint
-    else if (limits.current > limits.max) {
+    if (limits.current > limits.max) {
       error = this.errorMessages.categoryMaximum(limits.name, limits.max);
       console.log(`DEBUG: Category ${categoryId} maximum error:`, error);
     } else {
@@ -607,12 +513,12 @@ class BYOBoxBuilder {
       }
       errorEl.textContent = error;
       errorEl.style.display = 'block';
-      categoryEl.classList.add('has-error');
+      // categoryEl.classList.add('has-error');
     } else {
       if (errorEl) {
         errorEl.style.display = 'none';
       }
-      categoryEl.classList.remove('has-error');
+      // categoryEl.classList.remove('has-error');
     }
   }
 
@@ -620,10 +526,8 @@ class BYOBoxBuilder {
     const categoryEl = this.section.querySelector(`[data-category-id="${categoryId}"]`);
     const limits = this.state.categoryLimits.get(categoryId);
     
-    console.log(`DEBUG: updateCategoryProgress - categoryId: ${categoryId}, categoryEl:`, categoryEl, 'limits:', limits);
     
     if (!categoryEl || !limits) {
-      console.log(`DEBUG: Missing categoryEl or limits for ${categoryId}`);
       return;
     }
 
@@ -631,24 +535,17 @@ class BYOBoxBuilder {
     const currentCountEl = categoryEl.querySelector('.current-count');
     if (currentCountEl) {
       currentCountEl.textContent = limits.current;
-      console.log(`DEBUG: Updated counter for ${categoryId}: ${limits.current}`);
-    } else {
-      console.log(`DEBUG: No .current-count element found for ${categoryId}`);
     }
 
     // Update progress bar - use specific data attribute selector
     const progressFill = categoryEl.querySelector(`[data-progress-category="${categoryId}"]`);
-    console.log(`DEBUG: Progress fill element for ${categoryId}:`, progressFill);
     
     if (!progressFill) {
-      console.log(`DEBUG: No progress fill found with data-progress-category="${categoryId}"`);
       // Fallback to generic selector within this category
       const fallbackProgressFill = categoryEl.querySelector('.progress-fill');
-      console.log(`DEBUG: Fallback progress fill:`, fallbackProgressFill);
       if (fallbackProgressFill) {
         // Add the data attribute for future use
         fallbackProgressFill.setAttribute('data-progress-category', categoryId);
-        console.log(`DEBUG: Added data-progress-category="${categoryId}" to fallback element`);
       }
     }
     
@@ -659,47 +556,13 @@ class BYOBoxBuilder {
       // Simple progress calculation: current / max * 100
       const progressPercent = limits.max > 0 ? Math.min((limits.current / limits.max) * 100, 100) : 0;
       
-      console.log(`DEBUG: Progress calculation for ${categoryId}: ${limits.current}/${limits.max} = ${progressPercent}%`);
       
       // Set width and ensure visibility
       targetProgressFill.style.width = `${progressPercent}%`;
       targetProgressFill.style.display = 'block';
       targetProgressFill.style.height = '100%';
       
-      console.log(`DEBUG: Applied styles to progress fill:`, {
-        width: targetProgressFill.style.width,
-        display: targetProgressFill.style.display,
-        height: targetProgressFill.style.height,
-        backgroundColor: targetProgressFill.style.backgroundColor
-      });
-      
-      // Simple color update
-      this.updateProgressBarColor(targetProgressFill, limits);
-    } else {
-      console.log(`DEBUG: No progress-fill element found for ${categoryId}`);
-    }
-
-    // Update summary bar category count
-    const summaryCategory = this.section.querySelector(`.byo-box-summary-category[data-category-id="${categoryId}"] .current`);
-    if (summaryCategory) {
-      summaryCategory.textContent = limits.current;
-    }
-  }
-
-  updateProgressBarColor(progressFill, limits) {
-    // Simple color logic based on completion status
-    if (limits.current < limits.min) {
-      // Not meeting minimum - red
-      progressFill.style.backgroundColor = '#dc3545';
-    } else if (limits.current >= limits.min && limits.current <= limits.max) {
-      // Meeting requirements - green
-      progressFill.style.backgroundColor = '#28a745';
-    } else {
-      // Over maximum - orange (shouldn't happen with proper validation)
-      progressFill.style.backgroundColor = '#fd7e14';
-    }
-    
-    console.log(`DEBUG: Progress bar color for current=${limits.current}, min=${limits.min}, max=${limits.max}: ${progressFill.style.backgroundColor}`);
+    } 
   }
 
   updateSummary() {
@@ -728,15 +591,15 @@ class BYOBoxBuilder {
     const productsTotal = this.state.totalPrice - this.state.boxFee;
     
     if (productsTotalEl) {
-      this.animateNumberChange(productsTotalEl, productsTotal, true);
+      productsTotalEl.textContent = `$${productsTotal.toFixed(2)}`;
     }
     if (totalPriceEl) {
-      this.animateNumberChange(totalPriceEl, this.state.totalPrice, true);
+      totalPriceEl.textContent = `$${this.state.totalPrice.toFixed(2)}`;
     }
   }
 
   updateSelectedProductsPreview() {
-    const previewContainer = this.section.querySelector('.byo-box-summary-products-scroll');
+    const previewContainer = this.section.querySelector('.byo-box-summary-products-container');
     if (!previewContainer) return;
 
     // Clear existing previews
@@ -759,7 +622,12 @@ class BYOBoxBuilder {
     if (!hasProducts) {
       const emptyEl = document.createElement('div');
       emptyEl.className = 'byo-box-summary-empty';
-      emptyEl.innerHTML = '<span>No products selected</span>';
+      emptyEl.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="m1 1 4 4 14 2 1 8H6"></path>
+          </svg>
+          <span>Start building your box</span>`;
       previewContainer.appendChild(emptyEl);
     }
   }
@@ -827,37 +695,6 @@ class BYOBoxBuilder {
     }, 150);
   }
 
-  animateNumberChange(element, newValue, isCurrency = false) {
-    const currentValue = parseFloat(element.textContent.replace(/[^0-9.]/g, '')) || 0;
-    const increment = (newValue - currentValue) / 10;
-    let current = currentValue;
-    let step = 0;
-
-    const animate = () => {
-      step++;
-      current += increment;
-      
-      const displayValue = isCurrency 
-        ? `$${Math.abs(current).toFixed(2)}` 
-        : Math.round(current).toString();
-      
-      element.textContent = displayValue;
-      
-      if (step < 10) {
-        requestAnimationFrame(animate);
-      } else {
-        const finalValue = isCurrency 
-          ? `$${Math.abs(newValue).toFixed(2)}` 
-          : newValue.toString();
-        element.textContent = finalValue;
-      }
-    };
-
-    if (Math.abs(newValue - currentValue) > 0.01) {
-      requestAnimationFrame(animate);
-    }
-  }
-
   animateProgressBar(progressFill, targetPercent) {
     const currentPercent = parseFloat(progressFill.style.width) || 0;
     const increment = (targetPercent - currentPercent) / 20;
@@ -879,42 +716,6 @@ class BYOBoxBuilder {
     if (Math.abs(targetPercent - currentPercent) > 0.1) {
       requestAnimationFrame(animate);
     }
-  }
-
-  addSelectionRipple(element) {
-    const ripple = document.createElement('div');
-    ripple.className = 'selection-ripple';
-    element.appendChild(ripple);
-    
-    setTimeout(() => {
-      ripple.remove();
-    }, 600);
-  }
-
-  // Utility Methods
-  saveStateToHistory() {
-    const stateSnapshot = {
-      selectedProducts: new Map(this.state.selectedProducts),
-      categoryLimits: new Map(this.state.categoryLimits),
-      timestamp: Date.now()
-    };
-    
-    this.state.selectionHistory.push(stateSnapshot);
-    
-    if (this.state.selectionHistory.length > this.config.maxUndoHistory) {
-      this.state.selectionHistory.shift();
-    }
-  }
-
-  undoLastSelection() {
-    if (this.state.selectionHistory.length === 0) return;
-    
-    const previousState = this.state.selectionHistory.pop();
-    this.state.selectedProducts = previousState.selectedProducts;
-    this.state.categoryLimits = previousState.categoryLimits;
-    
-    this.updateAllUI();
-    this.announceChange('Last selection undone');
   }
 
   debounce(func, wait) {
@@ -946,27 +747,6 @@ class BYOBoxBuilder {
     return match ? parseFloat(match[0]) : 0;
   }
 
-  createQuantityAnnouncement(productTitle, quantity, action) {
-    if (action === 'increase') {
-      return `Added ${productTitle}. Current quantity: ${quantity}`;
-    } else {
-      return quantity === 0 
-        ? `Removed ${productTitle}` 
-        : `Decreased ${productTitle}. Current quantity: ${quantity}`;
-    }
-  }
-
-  announceChange(message) {
-    // Accessibility announcement
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    
-    document.body.appendChild(announcement);
-    setTimeout(() => announcement.remove(), 1000);
-  }
 
   showValidationError(categoryId, error) {
     this.displayCategoryValidation(categoryId, error);
@@ -981,13 +761,11 @@ class BYOBoxBuilder {
   updateAllUI() {
     // Only update product selection UI if we're on that page
     if (!this.isProductSelectionPage) {
-      console.log('On box selection page, skipping product UI updates');
       return;
     }
 
     // Comprehensive UI update for product selection page
     this.state.categoryLimits.forEach((limits, categoryId) => {
-      console.log('DEBUG: Updating category progress for:', categoryId);
       this.updateCategoryProgress(categoryId);
       this.validateCategory(categoryId);
     });
@@ -1014,20 +792,9 @@ class BYOBoxBuilder {
     }
   }
 
-  showProductPreview(productCard) {
-    // Enhanced product preview on hover
-    productCard.style.transform = 'translateY(-2px)';
-    productCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-  }
-
-  hideProductPreview(productCard) {
-    productCard.style.transform = '';
-    productCard.style.boxShadow = '';
-  }
 
   handleBoxSelection(button) {
     const boxId = button.dataset.boxId;
-    console.log('DEBUG: Box selection clicked, boxId =', boxId);
     
     if (!boxId) {
       console.error('No box ID found on button');
@@ -1043,9 +810,6 @@ class BYOBoxBuilder {
       // Navigate to product selection page with URL parameter
       const currentUrl = new URL(window.location);
       currentUrl.searchParams.set('selected_box', boxId); // Don't double-encode
-      
-      console.log('DEBUG: Box ID being set:', boxId);
-      console.log('DEBUG: Navigating to URL:', currentUrl.toString());
       
       // Use a small delay to show loading state
       setTimeout(() => {
@@ -1199,16 +963,6 @@ class BYOBoxBuilder {
   handleResize() {
     // Handle responsive updates
     this.updateAllUI();
-  }
-
-  // Public API for external integration
-  getState() {
-    return {
-      selectedProducts: this.state.selectedProducts,
-      totalPrice: this.state.totalPrice,
-      isValid: this.state.isValid,
-      boxConfiguration: this.state.boxConfiguration
-    };
   }
 
   reset() {
