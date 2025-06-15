@@ -826,7 +826,6 @@ class BYOBoxBuilder {
 
   handleAddToCart() {
     if (!this.state.isValid) {
-      this.announceChange('Please complete all required selections before adding to cart');
       return;
     }
 
@@ -885,7 +884,6 @@ class BYOBoxBuilder {
     });
 
     if (itemsToAdd.length === 0) {
-      this.announceChange('No products selected');
       this.restoreAddToCartButton();
       return;
     }
@@ -893,7 +891,6 @@ class BYOBoxBuilder {
     // Add items to cart using Shopify Ajax API
     this.addItemsToCart(itemsToAdd)
       .then(() => {
-        this.announceChange('Items added to cart successfully');
         // Clear dirty state since items were successfully added to cart
         this.state.isDirty = false;
         // Redirect to cart page
@@ -901,7 +898,6 @@ class BYOBoxBuilder {
       })
       .catch(error => {
         console.error('Error adding items to cart:', error);
-        this.announceChange('Error adding items to cart. Please try again.');
         this.restoreAddToCartButton();
         alert('Sorry, there was an error adding items to your cart. Please try again.');
       });
