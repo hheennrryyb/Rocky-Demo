@@ -1,0 +1,997 @@
+{%- comment -%}
+  BYO Box Builder Section
+  A flexible section for creating custom product boxes with category-based constraints
+{%- endcomment -%}
+
+{%- liquid
+  assign current_page = blank
+  assign selected_box_id = ''
+  assign selected_box = blank
+
+  # Check for URL parameter or form submission
+  if request.form.selected_box_id
+    assign current_page = 'product_selection'
+    assign selected_box_id = request.form.selected_box_id
+  else
+    assign current_page = 'box_selection'
+  endif
+
+  # JavaScript will handle URL parameter detection and page switching
+  # This is more reliable than trying to parse URLs in Liquid
+-%}
+
+{%- capture section_id -%}BYOBox-{{ section.id }}{%- endcapture -%}
+
+<div id="{{ section_id }}" class="byo-box-builder" data-section-id="{{ section.id }}">
+  {%- if section.settings.section_title != blank -%}
+    <div class="byo-box-header">
+      <h2 class="byo-box-title">{{ section.settings.section_title }}</h2>
+      {%- if section.settings.section_description != blank -%}
+        <div class="byo-box-description">
+          {{ section.settings.section_description }}
+        </div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Loading State {%- endcomment -%}
+  <div class="byo-box-loading" id="byo-box-loading-{{ section.id }}">
+    <div class="byo-box-loading-content">
+      <div class="byo-box-loading-spinner"></div>
+      <p class="byo-box-loading-text">Loading your box builder...</p>
+    </div>
+  </div>
+
+  <div class="byo-box-content" id="byo-box-content-{{ section.id }}" style="display: none;">
+    {%- comment -%} Page 1: Box Configuration Selection {%- endcomment -%}
+    <div class="byo-box-configurations {{ section.settings.layout_style }}-layout" id="byo-box-page-1-{{ section.id }}">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'box_configuration' -%}
+            {%- render 'byo-box-configuration-card', block: block, section_id: section.id -%}
+        {%- endcase -%}
+      {%- endfor -%}
+
+      {%- if section.blocks.size == 0 -%}
+        <div class="byo-box-empty-state">
+          <p>No box configurations available. Please add some box configurations in the theme editor.</p>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} Page 2: Product Selection - Will be shown/hidden by JavaScript {%- endcomment -%}
+    <div class="byo-box-product-selection" style="display: none;">
+      {%- comment -%} Back to Box Selection {%- endcomment -%}
+      <div class="byo-box-navigation">
+        <button type="button" class="byo-box-back-btn" onclick="BYOBoxBuilder.goBackToSelection()">
+          ← Back to Box Selection
+        </button>
+      </div>
+
+      {%- comment -%} Selected Box Info - Will be populated by JavaScript {%- endcomment -%}
+      <div class="byo-box-selected-info">
+        <div class="byo-box-selected-header">
+          <img class="byo-box-selected-image" style="display: none;" width="100" height="100">
+          <div class="byo-box-selected-details">
+            <h3 class="byo-box-selected-title"></h3>
+            <p class="byo-box-selected-description"></p>
+            <span class="byo-box-fee">Box Fee: $<span class="byo-box-fee-amount">0.00</span></span>
+          </div>
+        </div>
+      </div>
+
+      {%- comment -%} Category Sections - Will be populated by JavaScript {%- endcomment -%}
+      <div class="byo-box-categories">
+        {%- comment -%} Render all possible categories for all box configurations {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'box_configuration' -%}
+            <div
+              class="byo-box-config-data"
+              data-box-name="{{ block.settings.box_name }}"
+              data-box-description="{{ block.settings.box_description }}"
+              data-box-fee="{{ block.settings.box_fee }}"
+              data-box-image="{{ block.settings.box_image | image_url: width: 100 }}"
+              style="display: none;"
+            >
+              {%- comment -%} Category 1 {%- endcomment -%}
+              {%- if block.settings.category_1_collection -%}
+                {%- assign category_1_products = collections[block.settings.category_1_collection].products -%}
+                <div class="byo-box-category-data" data-category-id="category_1">
+                  {%- render 'byo-box-category-section',
+                    category_id: 'category_1',
+                    category_name: block.settings.category_1_name,
+                    category_label: block.settings.category_1_label,
+                    min_selections: block.settings.category_1_min,
+                    max_selections: block.settings.category_1_max,
+                    allow_duplicates: block.settings.category_1_allow_duplicates,
+                    sort_by: block.settings.category_1_sort,
+                    products: category_1_products
+                  -%}
+                </div>
+              {%- endif -%}
+
+              {%- comment -%} Category 2 {%- endcomment -%}
+              {%- if block.settings.category_2_collection and block.settings.category_2_name != blank -%}
+                {%- assign category_2_products = collections[block.settings.category_2_collection].products -%}
+                <div class="byo-box-category-data" data-category-id="category_2">
+                  {%- render 'byo-box-category-section',
+                    category_id: 'category_2',
+                    category_name: block.settings.category_2_name,
+                    category_label: block.settings.category_2_label,
+                    min_selections: block.settings.category_2_min,
+                    max_selections: block.settings.category_2_max,
+                    allow_duplicates: block.settings.category_2_allow_duplicates,
+                    sort_by: block.settings.category_2_sort,
+                    products: category_2_products
+                  -%}
+                </div>
+              {%- endif -%}
+
+              {%- comment -%} Category 3 {%- endcomment -%}
+              {%- if block.settings.category_3_collection and block.settings.category_3_name != blank -%}
+                {%- assign category_3_products = collections[block.settings.category_3_collection].products -%}
+                <div class="byo-box-category-data" data-category-id="category_3">
+                  {%- render 'byo-box-category-section',
+                    category_id: 'category_3',
+                    category_name: block.settings.category_3_name,
+                    category_label: block.settings.category_3_label,
+                    min_selections: block.settings.category_3_min,
+                    max_selections: block.settings.category_3_max,
+                    allow_duplicates: block.settings.category_3_allow_duplicates,
+                    sort_by: block.settings.category_3_sort,
+                    products: category_3_products
+                  -%}
+                </div>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%} Selection Summary (Fixed Bottom Bar) {%- endcomment -%}
+      <div class="byo-box-selection-bar">
+        {%- render 'byo-box-selection-summary' -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{%- style -%}
+  .byo-box-builder {
+    padding: 32px 0;
+  }
+
+  .byo-box-content {
+    padding: 32px 64px;
+    padding-bottom: 120px;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Loading State Styles */
+  .byo-box-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 64px 32px;
+  }
+
+  .byo-box-loading-content {
+    text-align: center;
+  }
+
+  .byo-box-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(var(--color-foreground), 0.1);
+    border-top: 3px solid rgb(var(--color-button));
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px auto;
+  }
+
+  .byo-box-loading-text {
+    color: rgba(var(--color-foreground), 0.7);
+    font-size: 18px;
+    margin: 0;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .byo-box-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .byo-box-title {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .byo-box-description {
+    font-size: 18px;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .byo-box-configurations.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .byo-box-configurations.list-layout {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .byo-box-configurations.list-layout .byo-box-configuration-card {
+    margin-bottom: 32px;
+  }
+
+  .byo-box-empty-state {
+    text-align: center;
+    padding: 64px 32px;
+    color: rgba(var(--color-foreground), 0.5);
+  }
+
+  .byo-box-navigation {
+    margin-bottom: 32px;
+  }
+
+  .byo-box-back-btn {
+    background: transparent;
+    border: 1px solid rgba(var(--color-foreground), 0.2);
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+
+  .byo-box-back-btn:hover {
+    background: rgba(var(--color-foreground), 0.05);
+    transform: translateX(-2px);
+  }
+
+  .byo-box-selected-info {
+    background: rgba(var(--color-foreground), 0.02);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+  }
+
+  .byo-box-selected-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .byo-box-selected-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .byo-box-selected-details h3 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+  }
+
+  .byo-box-selected-details p {
+    margin: 0 0 8px 0;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .byo-box-fee {
+    font-weight: bold;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-categories {
+    margin-bottom: 120px; /* Space for fixed bottom bar */
+  }
+
+  /* Category wrapper to maintain proper structure */
+  .byo-box-category-wrapper {
+    /* Transparent wrapper - doesn't affect styling */
+    display: contents;
+  }
+
+  /* Category Section Styles - moved here for better specificity */
+  .byo-box-category-section {
+    margin-bottom: 48px;
+    padding: 24px;
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 12px;
+    background: rgb(var(--color-background));
+  }
+
+  .byo-box-category-header {
+    margin-bottom: 24px;
+  }
+
+  .byo-box-category-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .byo-box-category-title h4 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-category-optional {
+    background: rgba(var(--color-foreground), 0.1);
+    color: rgba(var(--color-foreground), 0.6);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .byo-box-category-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .byo-box-category-label {
+    color: rgba(var(--color-foreground), 0.75);
+    font-size: 15px;
+  }
+
+  .byo-box-category-counter {
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-category-counter .current-count {
+    font-size: 18px;
+    color: rgb(var(--color-button));
+  }
+
+  .byo-box-category-counter .min-max-display {
+    color: rgba(var(--color-foreground), 0.6);
+    font-size: 14px;
+    font-weight: normal;
+  }
+
+  .byo-box-category-progress-bar {
+    height: 6px !important;
+    background: rgba(var(--color-foreground), 0.15) !important;
+    border-radius: 3px !important;
+    overflow: hidden !important;
+    position: relative !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  .byo-box-category-progress-bar .progress-fill {
+    height: 100% !important;
+    background: rgb(var(--color-button)) !important;
+    transition: width 0.3s ease !important;
+    border-radius: 3px !important;
+    display: block !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure progress fill is visible with specific data attribute */
+  .progress-fill[data-progress-category] {
+    height: 100% !important;
+    background: rgb(var(--color-button)) !important;
+    transition: width 0.3s ease !important;
+    border-radius: 3px !important;
+    display: block !important;
+  }
+
+  /* Products Grid - IMPORTANT: This ensures grid layout works */
+  .byo-box-products-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  .byo-box-category-empty {
+    text-align: center;
+    padding: 32px;
+    color: rgba(var(--color-foreground), 0.5);
+  }
+
+  /* Enhanced Category Error Styles */
+  .byo-box-category-error {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: rgb(220, 53, 69);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 16px;
+    display: none;
+    animation: errorSlideIn 0.3s ease-out;
+  }
+
+  .byo-box-category-section.has-error {
+    border-color: rgba(220, 53, 69, 0.3);
+    background: rgba(220, 53, 69, 0.02);
+  }
+
+  /* Enhanced Progress Bar Colors */
+  .progress-fill.progress-incomplete {
+    background: linear-gradient(90deg, #dc3545, #fd7e14);
+  }
+
+  .progress-fill.progress-minimum {
+    background: linear-gradient(90deg, #ffc107, #28a745);
+  }
+
+  .progress-fill.progress-optimal {
+    background: linear-gradient(90deg, #28a745, #20c997);
+  }
+
+  .progress-fill.progress-maximum {
+    background: linear-gradient(90deg, #20c997, #17a2b8);
+  }
+
+  /* Selection Ripple Animation */
+  .selection-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(var(--color-button), 0.3);
+    transform: translate(-50%, -50%);
+    animation: rippleExpand 0.6s ease-out;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Enhanced Add to Cart Button States */
+  .byo-box-add-to-cart-btn.ready {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+
+  .byo-box-add-to-cart-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* Product Card Enhancements */
+  .byo-box-product-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .byo-box-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .byo-box-product-card.selected {
+    border-color: rgb(var(--color-button));
+    box-shadow: 0 0 0 2px rgba(var(--color-button), 0.1);
+    background: rgba(var(--color-button), 0.02);
+  }
+
+  /* Enhanced Quantity Controls */
+  .byo-box-qty-display {
+    transition: all 0.2s ease;
+  }
+
+  .byo-box-qty-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .byo-box-qty-btn:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  /* Summary Product Thumbnails */
+  .byo-box-summary-product-thumb {
+    position: relative;
+    display: inline-block;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+
+  .byo-box-summary-product-thumb img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .byo-box-summary-product-qty {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .byo-box-summary-empty {
+    text-align: center;
+    padding: 16px;
+    color: rgba(var(--color-foreground), 0.5);
+    font-style: italic;
+  }
+
+  /* Screen Reader Only */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .byo-box-selection-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgb(var(--color-background));
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Animations */
+  @keyframes errorSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes rippleExpand {
+    0% {
+      width: 20px;
+      height: 20px;
+      opacity: 0.8;
+    }
+    100% {
+      width: 200px;
+      height: 200px;
+      opacity: 0;
+    }
+  }
+
+  /* Enhanced Mobile Responsiveness */
+  @media screen and (max-width: 749px) {
+    .byo-box-content {
+      padding: 32px 16px;
+    }
+    .byo-box-title {
+      font-size: 32px;
+    }
+
+    .byo-box-configurations.grid-layout {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 0 16px;
+    }
+
+    .byo-box-selected-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .byo-box-selected-image {
+      align-self: center;
+    }
+
+    .byo-box-categories {
+      margin-bottom: 140px; /* More space on mobile */
+    }
+
+    /* Mobile category styles */
+    .byo-box-category-section {
+      padding: 16px;
+      margin-bottom: 32px;
+    }
+
+    .byo-box-category-title {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .byo-box-category-title h4 {
+      font-size: 20px;
+    }
+
+    .byo-box-category-progress {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Mobile products grid */
+    .byo-box-products-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+      gap: 12px !important;
+    }
+
+    .byo-box-category-error {
+      font-size: 14px;
+      padding: 8px 12px;
+    }
+
+    .byo-box-summary-product-thumb {
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .byo-box-summary-product-thumb img {
+      width: 60px;
+      height: 60px;
+    }
+
+    .byo-box-summary-product-qty {
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      top: -6px;
+      right: -6px;
+    }
+  }
+
+  /* Dark Mode Support */
+  @media (prefers-color-scheme: dark) {
+    .byo-box-category-error {
+      background: rgba(220, 53, 69, 0.15);
+      border-color: rgba(220, 53, 69, 0.4);
+    }
+
+    .byo-box-category-section.has-error {
+      background: rgba(220, 53, 69, 0.05);
+    }
+
+    .byo-box-selection-bar {
+      backdrop-filter: blur(10px) brightness(0.8);
+    }
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    .byo-box-product-card,
+    .byo-box-qty-btn,
+    .byo-box-back-btn,
+    .selection-ripple,
+    .byo-box-add-to-cart-btn.ready {
+      animation: none;
+      transition: none;
+    }
+
+    .byo-box-product-card:hover {
+      transform: none;
+    }
+  }
+
+  /* High Contrast Mode Support */
+  @media (prefers-contrast: high) {
+    .byo-box-category-error {
+      border-width: 2px;
+      font-weight: 600;
+    }
+
+    .byo-box-product-card.selected {
+      border-width: 3px;
+    }
+
+    .progress-fill {
+      background: rgb(var(--color-button)) !important;
+    }
+  }
+{%- endstyle -%}
+
+{%- comment -%} Load JavaScript for interactive functionality {%- endcomment -%}
+<script src="{{ 'byo-box-builder.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "BYO Box Builder",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section Title",
+      "default": "Build Your Own Box"
+    },
+    {
+      "type": "textarea",
+      "id": "section_description",
+      "label": "Section Description",
+      "default": "Create your perfect combination of products"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout Style",
+      "options": [
+        { "value": "grid", "label": "Grid Layout" },
+        { "value": "list", "label": "List Layout" }
+      ],
+      "default": "grid"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "box_configuration",
+      "name": "Box Configuration",
+      "settings": [
+        {
+          "type": "header",
+          "content": "Box Details"
+        },
+        {
+          "type": "text",
+          "id": "box_name",
+          "label": "Box Name",
+          "default": "Custom Box"
+        },
+        {
+          "type": "textarea",
+          "id": "box_description",
+          "label": "Box Description",
+          "default": "Build your perfect selection"
+        },
+        {
+          "type": "image_picker",
+          "id": "box_image",
+          "label": "Box Image"
+        },
+        {
+          "type": "number",
+          "id": "box_fee",
+          "label": "Box Fee ($)",
+          "default": 1
+        },
+        {
+          "type": "checkbox",
+          "id": "is_featured",
+          "label": "Featured Box",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Category 1"
+        },
+        {
+          "type": "text",
+          "id": "category_1_name",
+          "label": "Category 1 Name",
+          "default": "Bath Bombs"
+        },
+        {
+          "type": "collection",
+          "id": "category_1_collection",
+          "label": "Category 1 Collection"
+        },
+        {
+          "type": "text",
+          "id": "category_1_label",
+          "label": "Category 1 Display Label",
+          "default": "Choose your bath bombs"
+        },
+        {
+          "type": "number",
+          "id": "category_1_min",
+          "label": "Category 1 Minimum Items",
+          "default": 1
+        },
+        {
+          "type": "number",
+          "id": "category_1_max",
+          "label": "Category 1 Maximum Items",
+          "default": 6
+        },
+        {
+          "type": "checkbox",
+          "id": "category_1_allow_duplicates",
+          "label": "Category 1 Allow Duplicates",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "category_1_sort",
+          "label": "Category 1 Sort Order",
+          "options": [
+            { "value": "title", "label": "Title A-Z" },
+            { "value": "title-desc", "label": "Title Z-A" },
+            { "value": "price", "label": "Price Low-High" },
+            { "value": "price-desc", "label": "Price High-Low" },
+            { "value": "created", "label": "Newest First" },
+            { "value": "created-desc", "label": "Oldest First" }
+          ],
+          "default": "title"
+        },
+        {
+          "type": "header",
+          "content": "Category 2 (Optional)"
+        },
+        {
+          "type": "text",
+          "id": "category_2_name",
+          "label": "Category 2 Name"
+        },
+        {
+          "type": "collection",
+          "id": "category_2_collection",
+          "label": "Category 2 Collection"
+        },
+        {
+          "type": "text",
+          "id": "category_2_label",
+          "label": "Category 2 Display Label"
+        },
+        {
+          "type": "number",
+          "id": "category_2_min",
+          "label": "Category 2 Minimum Items",
+          "default": 0
+        },
+        {
+          "type": "number",
+          "id": "category_2_max",
+          "label": "Category 2 Maximum Items",
+          "default": 3
+        },
+        {
+          "type": "checkbox",
+          "id": "category_2_allow_duplicates",
+          "label": "Category 2 Allow Duplicates",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "category_2_sort",
+          "label": "Category 2 Sort Order",
+          "options": [
+            { "value": "title", "label": "Title A-Z" },
+            { "value": "title-desc", "label": "Title Z-A" },
+            { "value": "price", "label": "Price Low-High" },
+            { "value": "price-desc", "label": "Price High-Low" },
+            { "value": "created", "label": "Newest First" },
+            { "value": "created-desc", "label": "Oldest First" }
+          ],
+          "default": "title"
+        },
+        {
+          "type": "header",
+          "content": "Category 3 (Optional)"
+        },
+        {
+          "type": "text",
+          "id": "category_3_name",
+          "label": "Category 3 Name"
+        },
+        {
+          "type": "collection",
+          "id": "category_3_collection",
+          "label": "Category 3 Collection"
+        },
+        {
+          "type": "text",
+          "id": "category_3_label",
+          "label": "Category 3 Display Label"
+        },
+        {
+          "type": "number",
+          "id": "category_3_min",
+          "label": "Category 3 Minimum Items",
+          "default": 0
+        },
+        {
+          "type": "number",
+          "id": "category_3_max",
+          "label": "Category 3 Maximum Items",
+          "default": 2
+        },
+        {
+          "type": "checkbox",
+          "id": "category_3_allow_duplicates",
+          "label": "Category 3 Allow Duplicates",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "category_3_sort",
+          "label": "Category 3 Sort Order",
+          "options": [
+            { "value": "title", "label": "Title A-Z" },
+            { "value": "title-desc", "label": "Title Z-A" },
+            { "value": "price", "label": "Price Low-High" },
+            { "value": "price-desc", "label": "Price High-Low" },
+            { "value": "created", "label": "Newest First" },
+            { "value": "created-desc", "label": "Oldest First" }
+          ],
+          "default": "title"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "BYO Box Builder",
+      "blocks": [
+        {
+          "type": "box_configuration",
+          "settings": {
+            "box_name": "Bath Bomb Box",
+            "box_description": "Choose your favorite bath bomb scents",
+            "box_fee": 1,
+            "category_1_name": "Bath Bombs",
+            "category_1_label": "Choose 4-6 bath bombs",
+            "category_1_min": 4,
+            "category_1_max": 6,
+            "category_1_allow_duplicates": true
+          }
+        },
+        {
+          "type": "box_configuration",
+          "settings": {
+            "box_name": "Perfect Pair Gift Set",
+            "box_description": "The perfect combination for daily care",
+            "box_fee": 1,
+            "category_1_name": "Everything Wash",
+            "category_1_label": "Choose 1 Everything Wash",
+            "category_1_min": 1,
+            "category_1_max": 1,
+            "category_1_allow_duplicates": false,
+            "category_2_name": "Daily Oat Lotion",
+            "category_2_label": "Choose 1 Daily Oat Lotion",
+            "category_2_min": 1,
+            "category_2_max": 1,
+            "category_2_allow_duplicates": false
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

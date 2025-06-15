@@ -1,0 +1,276 @@
+{%- comment -%}
+  BYO Box Configuration Card Snippet
+  Renders a selectable box configuration card for Page 1
+
+  Parameters:
+  - block: The box configuration block
+  - section_id: The section ID for form submission
+{%- endcomment -%}
+
+{%- liquid
+  assign box_name = block.settings.box_name
+  assign box_description = block.settings.box_description
+  assign box_image = block.settings.box_image
+  assign box_fee = block.settings.box_fee
+  assign is_featured = block.settings.is_featured
+
+  # Count total categories configured
+  assign category_count = 0
+  if block.settings.category_1_name != blank
+    assign category_count = category_count | plus: 1
+  endif
+  if block.settings.category_2_name != blank
+    assign category_count = category_count | plus: 1
+  endif
+  if block.settings.category_3_name != blank
+    assign category_count = category_count | plus: 1
+  endif
+-%}
+
+<div class="byo-box-configuration-card{% if is_featured %} featured{% endif %}" data-box-id="{{ box_name }}">
+  {%- if box_image -%}
+    <div class="byo-box-card-image">
+      <img
+        src="{{ box_image | image_url: width: 400 }}"
+        alt="{{ box_name }}"
+        width="400"
+        height="300"
+        loading="lazy"
+      >
+      {%- if is_featured -%}
+        <span class="byo-box-featured-badge">Featured</span>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="byo-box-card-content">
+    <h3 class="byo-box-card-title">{{ box_name }}</h3>
+
+    {%- if box_description != blank -%}
+      <p class="byo-box-card-description">{{ box_description }}</p>
+    {%- endif -%}
+
+    <div class="byo-box-card-details">
+      {%- comment -%} Category Information {%- endcomment -%}
+      <div class="byo-box-card-categories">
+        {%- if block.settings.category_1_name != blank -%}
+          <div class="byo-box-card-category">
+            <strong>{{ block.settings.category_1_name }}:</strong>
+            <span>
+              {%- if block.settings.category_1_min == 1 and block.settings.category_1_max == 1 -%}
+                1 item
+              {%- else -%}
+                {{ block.settings.category_1_min }}-{{ block.settings.category_1_max }} items
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+
+        {%- if block.settings.category_2_name != blank -%}
+          <div class="byo-box-card-category">
+            <strong>{{ block.settings.category_2_name }}:</strong>
+            <span>
+              {%- if block.settings.category_2_min == 1 and block.settings.category_2_max == 1 -%}
+                1 item
+              {%- else -%}
+                {{ block.settings.category_2_min }}-{{ block.settings.category_2_max }} items
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+
+        {%- if block.settings.category_3_name != blank -%}
+          <div class="byo-box-card-category">
+            <strong>{{ block.settings.category_3_name }}:</strong>
+            <span>
+              {%- if block.settings.category_3_min == 1 and block.settings.category_3_max == 1 -%}
+                1 item
+              {%- else -%}
+                {{ block.settings.category_3_min }}-{{ block.settings.category_3_max }} items
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%} Pricing Information {%- endcomment -%}
+      <div class="byo-box-card-pricing">
+        <span class="byo-box-card-fee">Box Fee: {{ box_fee | times: 100 | money }}</span>
+        <small class="byo-box-card-note">+ Product prices</small>
+      </div>
+    </div>
+  </div>
+  {%- comment -%} Selection Button {%- endcomment -%}
+  <div class="byo-box-card-form">
+    <button type="button" class="byo-box-card-button" data-box-id="{{ box_name }}">
+      Start Building
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0L16 8L8 16L7 15L13.5 8.5H0V7.5H13.5L7 1L8 0Z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+{%- style -%}
+  .byo-box-configuration-card {
+    background: rgb(var(--color-background));
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .byo-box-configuration-card:hover {
+    border-color: rgba(var(--color-foreground), 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .byo-box-configuration-card.featured {
+    border-color: rgb(var(--color-button));
+    box-shadow: 0 0 0 2px rgba(var(--color-button), 0.1);
+  }
+
+  .byo-box-card-image {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+  }
+
+  .byo-box-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .byo-box-featured-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .byo-box-card-content {
+    padding: 24px;
+  }
+
+  .byo-box-card-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-card-description {
+    color: rgba(var(--color-foreground), 0.75);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+  }
+
+  .byo-box-card-categories {
+    margin-bottom: 16px;
+  }
+
+  .byo-box-card-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .byo-box-card-category strong {
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-card-category span {
+    color: rgba(var(--color-foreground), 0.6);
+    font-size: 14px;
+  }
+
+  .byo-box-card-pricing {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+    margin-bottom: 16px;
+  }
+
+  .byo-box-card-fee {
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-card-note {
+    color: rgba(var(--color-foreground), 0.5);
+    font-size: 14px;
+  }
+
+  .byo-box-card-form {
+    margin: 0;
+  }
+
+  .byo-box-card-button {
+    width: 100%;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border: none;
+    padding: 16px 32px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .byo-box-card-button:hover {
+    background: rgba(var(--color-button), 0.9);
+  }
+
+  .byo-box-card-button svg {
+    transition: transform 0.2s ease;
+  }
+
+  .byo-box-card-button:hover svg {
+    transform: translateX(2px);
+  }
+
+  .byo-box-card-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .byo-box-card-button:disabled svg {
+    transform: none !important;
+  }
+
+  @media screen and (max-width: 749px) {
+    .byo-box-card-content {
+      padding: 16px;
+    }
+
+    .byo-box-card-title {
+      font-size: 18px;
+    }
+
+    .byo-box-card-category {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+  }
+{%- endstyle -%}

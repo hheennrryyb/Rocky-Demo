@@ -1,0 +1,247 @@
+{%- comment -%}
+  BYO Box Product Card Snippet
+  Renders an individual product card with quantity selector
+
+  Parameters:
+  - product: The product object
+  - category_id: The category this product belongs to
+  - allow_duplicates: Whether duplicates are allowed for this category
+{%- endcomment -%}
+
+{%- liquid
+  assign product_id = product.id
+  assign product_title = product.title
+  assign product_price = product.price
+  assign product_image = product.featured_image
+  assign product_url = product.url
+  assign product_available = product.available
+
+  # Get the first available variant ID for cart operations
+  assign variant_id = product.selected_or_first_available_variant.id
+  if variant_id == blank and product.variants.size > 0
+    assign variant_id = product.variants.first.id
+  endif
+
+  # Generate unique identifier for this product in this category
+  assign unique_id = category_id | append: '_' | append: product_id
+-%}
+
+<div
+  class="byo-box-product-card"
+  data-product-id="{{ product_id }}"
+  data-variant-id="{{ variant_id }}"
+  data-category-id="{{ category_id }}"
+  data-allow-duplicates="{{ allow_duplicates }}"
+>
+  {%- if product_image -%}
+    <div class="byo-box-product-image">
+      <img
+        src="{{ product_image | image_url: width: 300 }}"
+        alt="{{ product_title }}"
+        width="300"
+        height="300"
+        loading="lazy"
+      >
+      {%- unless product_available -%}
+        <div class="byo-box-product-sold-out">Sold Out</div>
+      {%- endunless -%}
+    </div>
+  {%- endif -%}
+
+  <div class="byo-box-product-info">
+    <h5 class="byo-box-product-title">{{ product_title }}</h5>
+    <div class="byo-box-product-price">
+      {{ product_price | money }}
+    </div>
+  </div>
+
+  {%- if product_available -%}
+    <div class="byo-box-product-quantity">
+      <button
+        type="button"
+        class="byo-box-qty-btn decrease"
+        data-action="decrease"
+        disabled
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+          <path d="M4 8h8"/>
+        </svg>
+      </button>
+
+      <span class="byo-box-qty-display" data-quantity="0">0</span>
+
+      <button
+        type="button"
+        class="byo-box-qty-btn increase"
+        data-action="increase"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+          <path d="M8 4v8M4 8h8"/>
+        </svg>
+      </button>
+    </div>
+  {%- else -%}
+    <div class="byo-box-product-unavailable">
+      <span>Unavailable</span>
+    </div>
+  {%- endif -%}
+</div>
+
+{%- style -%}
+  .byo-box-product-card {
+    background: rgb(var(--color-background));
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .byo-box-product-card:hover {
+    border-color: rgba(var(--color-foreground), 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .byo-box-product-card.selected {
+    border-color: rgb(var(--color-button));
+    box-shadow: 0 0 0 2px rgba(var(--color-button), 0.1);
+  }
+
+  .byo-box-product-image {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+
+  .byo-box-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .byo-box-product-sold-out {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .byo-box-product-info {
+    margin-bottom: 16px;
+  }
+
+  .byo-box-product-title {
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0 0 8px 0;
+    color: rgb(var(--color-foreground));
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .byo-box-product-price {
+    font-weight: 600;
+    color: rgb(var(--color-button));
+    font-size: 18px;
+  }
+
+  .byo-box-product-quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px;
+    background: rgba(var(--color-foreground), 0.03);
+    border-radius: 6px;
+  }
+
+  .byo-box-qty-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(var(--color-foreground), 0.2);
+    background: rgb(var(--color-background));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .byo-box-qty-btn:hover:not(:disabled) {
+    border-color: rgb(var(--color-button));
+    background: rgba(var(--color-button), 0.1);
+    color: rgb(var(--color-button));
+  }
+
+  .byo-box-qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .byo-box-qty-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2;
+  }
+
+  .byo-box-qty-display {
+    font-weight: 600;
+    font-size: 18px;
+    color: rgb(var(--color-foreground));
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .byo-box-product-unavailable {
+    text-align: center;
+    padding: 12px;
+    color: rgba(var(--color-foreground), 0.5);
+    font-size: 14px;
+    background: rgba(var(--color-foreground), 0.05);
+    border-radius: 6px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .byo-box-product-card {
+      padding: 12px;
+    }
+
+    .byo-box-product-title {
+      font-size: 14px;
+    }
+
+    .byo-box-product-price {
+      font-size: 18px;
+    }
+
+    .byo-box-product-quantity {
+      gap: 12px;
+    }
+
+    .byo-box-qty-btn {
+      width: 28px;
+      height: 28px;
+    }
+
+    .byo-box-qty-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+{%- endstyle -%}

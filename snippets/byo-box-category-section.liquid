@@ -1,0 +1,87 @@
+{%- comment -%}
+  BYO Box Category Section Snippet
+  Renders a category section with product grid for Page 2
+
+  Parameters:
+  - category_id: Unique ID for this category (category_1, category_2, etc.)
+  - category_name: Display name for the category
+  - category_label: Instruction label for selection
+  - min_selections: Minimum number of items required
+  - max_selections: Maximum number of items allowed
+  - allow_duplicates: Whether duplicates are allowed
+  - sort_by: How to sort products (title, price, etc.)
+  - products: Collection of products to display
+{%- endcomment -%}
+
+{%- liquid
+  # Sort products based on sort_by parameter
+  case sort_by
+    when 'title'
+      assign sorted_products = products | sort: 'title'
+    when 'title-desc'
+      assign sorted_products = products | sort: 'title' | reverse
+    when 'price'
+      assign sorted_products = products | sort: 'price'
+    when 'price-desc'
+      assign sorted_products = products | sort: 'price' | reverse
+    when 'created'
+      assign sorted_products = products | sort: 'created_at'
+    when 'created-desc'
+      assign sorted_products = products | sort: 'created_at' | reverse
+    else
+      assign sorted_products = products
+  endcase
+
+  # Check if this is an optional category
+  assign is_optional = false
+  if min_selections == 0
+    assign is_optional = true
+  endif
+-%}
+
+<div class="byo-box-category-section" data-category-id="{{ category_id }}">
+  <div class="byo-box-category-header">
+    <div class="byo-box-category-title">
+      <h4>{{ category_name }}</h4>
+      {%- if is_optional -%}
+        <span class="byo-box-category-optional">Optional</span>
+      {%- endif -%}
+    </div>
+
+    <div class="byo-box-category-progress">
+      <div class="byo-box-category-label">{{ category_label }}</div>
+      <div class="byo-box-category-counter">
+        <span class="current-count">0</span>
+        <span class="min-max-display">
+          {%- if min_selections == max_selections -%}
+            / {{ min_selections }}
+          {%- else -%}
+            (min: {{ min_selections }}, max: {{ max_selections }})
+          {%- endif -%}
+        </span>
+      </div>
+    </div>
+
+    <div class="byo-box-category-progress-bar">
+      <div class="progress-fill" data-progress-category="{{ category_id }}" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <div class="byo-box-category-products">
+    {%- if sorted_products.size > 0 -%}
+      <div class="byo-box-products-grid">
+        {%- for product in sorted_products -%}
+          {%- render 'byo-box-product-card',
+            product: product,
+            category_id: category_id,
+            allow_duplicates: allow_duplicates
+          -%}
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="byo-box-category-empty">
+        <p>No products available in this category.</p>
+      </div>
+    {%- endif -%}
+  </div>
+</div>

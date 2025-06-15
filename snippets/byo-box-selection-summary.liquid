@@ -1,0 +1,294 @@
+{%- comment -%}
+  BYO Box Selection Summary Snippet
+  Renders the fixed bottom bar showing current selections and progress
+
+  Parameters:
+  - selected_box: The currently selected box configuration
+{%- endcomment -%}
+
+{%- liquid
+  assign box_name = selected_box.settings.box_name
+  assign box_fee = selected_box.settings.box_fee
+-%}
+
+<div class="byo-box-selection-summary" data-box-name="{{ box_name }}">
+  <div class="byo-box-summary-content">
+    {%- comment -%} Left Side: Progress Overview {%- endcomment -%}
+    <div class="byo-box-summary-progress">
+      <div class="byo-box-summary-title">{{ box_name }}</div>
+
+      <div class="byo-box-summary-categories">
+        {%- if selected_box.settings.category_1_name != blank -%}
+          <div class="byo-box-summary-category" data-category-id="category_1">
+            <span class="category-name">{{ selected_box.settings.category_1_name }}:</span>
+            <span class="category-count">
+              <span class="current">0</span>/<span class="required">{{ selected_box.settings.category_1_min }}</span>
+              {%- if selected_box.settings.category_1_max != selected_box.settings.category_1_min -%}
+                -{{ selected_box.settings.category_1_max }}
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+
+        {%- if selected_box.settings.category_2_name != blank -%}
+          <div class="byo-box-summary-category" data-category-id="category_2">
+            <span class="category-name">{{ selected_box.settings.category_2_name }}:</span>
+            <span class="category-count">
+              <span class="current">0</span>/<span class="required">{{ selected_box.settings.category_2_min }}</span>
+              {%- if selected_box.settings.category_2_max != selected_box.settings.category_2_min -%}
+                -{{ selected_box.settings.category_2_max }}
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+
+        {%- if selected_box.settings.category_3_name != blank -%}
+          <div class="byo-box-summary-category" data-category-id="category_3">
+            <span class="category-name">{{ selected_box.settings.category_3_name }}:</span>
+            <span class="category-count">
+              <span class="current">0</span>/<span class="required">{{ selected_box.settings.category_3_min }}</span>
+              {%- if selected_box.settings.category_3_max != selected_box.settings.category_3_min -%}
+                -{{ selected_box.settings.category_3_max }}
+              {%- endif -%}
+            </span>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- comment -%} Center: Selected Products Preview {%- endcomment -%}
+    <div class="byo-box-summary-products">
+      <div class="byo-box-summary-products-scroll">
+        <div class="byo-box-summary-empty">
+          <span>No products selected</span>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Right Side: Pricing & Add to Cart {%- endcomment -%}
+    <div class="byo-box-summary-actions">
+      <div class="byo-box-summary-pricing">
+        <div class="byo-box-price-breakdown">
+          <div class="price-line">
+            <span>Products:</span>
+            <span class="products-total">$0.00</span>
+          </div>
+          <div class="price-line">
+            <span>Box Fee:</span>
+            <span>${{ box_fee | money_without_currency }}</span>
+          </div>
+          <div class="price-line total">
+            <span>Total:</span>
+            <span class="total-price">${{ box_fee | money_without_currency }}</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="byo-box-add-to-cart-btn" disabled>
+        <span class="btn-text">Complete Selection</span>
+        <span class="btn-ready" style="display: none;">Add to Cart</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .485.621L12.61 8.621A.5.5 0 0 1 12.125 9H4.485L4.89 10H12.5a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.485-.379L1.61 1H.5a.5.5 0 0 1-.5-.5zM4 13a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+{%- style -%}
+  .byo-box-selection-summary {
+    padding: 16px 32px;
+    background: rgb(var(--color-background));
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .byo-box-summary-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 32px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .byo-box-summary-title {
+    font-weight: 600;
+    font-size: 18px;
+    color: rgb(var(--color-foreground));
+    margin-bottom: 8px;
+  }
+
+  .byo-box-summary-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .byo-box-summary-category {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+
+  .byo-box-summary-category .category-name {
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .byo-box-summary-category .category-count {
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-summary-category .current {
+    color: rgb(var(--color-button));
+  }
+
+  .byo-box-summary-products {
+    max-height: 100px;
+  }
+
+  .byo-box-summary-products-scroll {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    height: 100px;
+  }
+
+  .byo-box-summary-empty {
+    width: 100%;
+    text-align: center;
+    color: rgba(var(--color-foreground), 0.5);
+    font-size: 14px;
+  }
+
+  .byo-box-summary-product-qty {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .byo-box-summary-actions {
+    text-align: right;
+  }
+
+  .byo-box-summary-pricing {
+    margin-bottom: 16px;
+  }
+
+  .byo-box-price-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .price-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+
+  .price-line.total {
+    font-weight: 600;
+    font-size: 18px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-add-to-cart-btn {
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 16px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .byo-box-add-to-cart-btn:hover {
+    background: rgba(var(--color-button), 0.9);
+  }
+
+  .byo-box-add-to-cart-btn:disabled {
+    background: rgba(var(--color-foreground), 0.2);
+    color: rgba(var(--color-foreground), 0.5);
+    cursor: not-allowed;
+  }
+
+  .byo-box-add-to-cart-btn:not(:disabled):hover {
+    background: rgba(var(--color-button), 0.9);
+  }
+
+  .byo-box-overall-progress {
+    margin-top: 16px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: rgba(var(--color-foreground), 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: rgb(var(--color-button));
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .byo-box-selection-summary {
+      padding: 16px;
+    }
+
+    .byo-box-summary-content {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .byo-box-summary-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .byo-box-summary-category {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .byo-box-summary-products {
+      order: -1;
+    }
+
+    .byo-box-summary-actions {
+      text-align: center;
+    }
+
+    .byo-box-add-to-cart-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+{%- endstyle -%}

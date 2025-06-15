@@ -1,0 +1,249 @@
+{%- comment -%}
+  BYO Box Bundle Cart Item Display
+  Use this snippet in your cart template to properly display BYO Box bundles
+
+  This version handles individual items with bundle properties:
+  - Main bundle items have '_bundle_main': 'true' (the BYO Box itself)
+  - Component items have '_bundle_component': 'true' (selected products)
+
+  Usage in cart template:
+  {% if item.properties._custom_bundle == 'true' %}
+    {% render 'byo-box-cart-item', item: item %}
+  {% else %}
+    <!-- Regular cart item display -->
+  {% endif %}
+{%- endcomment -%}
+
+{%- liquid
+  assign bundle_title = item.properties._bundle_title | default: item.product.title
+
+  if item.properties._bundle_main == 'true'
+    assign is_main_bundle = true
+  else
+    assign is_main_bundle = false
+  endif
+
+  if item.properties._bundle_component == 'true'
+    assign is_component = true
+  else
+    assign is_component = false
+  endif
+-%}
+
+{%- if is_main_bundle -%}
+  {%- comment -%} Main Bundle Item (BYO Box) {%- endcomment -%}
+  <div class="byo-box-bundle-main" data-bundle-key="{{ item.key }}">
+    <div class="byo-box-bundle-header">
+      <div class="byo-box-bundle-image">
+        {%- if item.image -%}
+          <img src="{{ item.image | image_url: width: 80 }}" alt="{{ item.product.title }}" width="80" height="80">
+        {%- endif -%}
+      </div>
+      <div class="byo-box-bundle-info">
+        <div class="byo-box-bundle-badge">CUSTOM BYO BOX</div>
+        <h3 class="byo-box-bundle-title">{{ bundle_title }}</h3>
+        <p class="byo-box-bundle-description">Custom box with selected products</p>
+      </div>
+      <div class="byo-box-bundle-price">
+        <span class="byo-box-bundle-fee">Box Fee: {{ item.final_line_price | money }}</span>
+      </div>
+    </div>
+  </div>
+
+{%- elsif is_component -%}
+  {%- comment -%} Bundle Component Item {%- endcomment -%}
+  <div class="byo-box-component-item" data-bundle-key="{{ item.key }}">
+    <div class="byo-box-component-header">
+      <div class="byo-box-component-image">
+        {%- if item.image -%}
+          <img src="{{ item.image | image_url: width: 60 }}" alt="{{ item.product.title }}" width="60" height="60">
+        {%- endif -%}
+      </div>
+      <div class="byo-box-component-info">
+        <div class="byo-box-component-badge">BUNDLE ITEM</div>
+        <h4 class="byo-box-component-title">{{ item.product.title }}</h4>
+        <p class="byo-box-component-details">Qty: {{ item.quantity }} • {{ item.final_price | money }} each</p>
+        {%- if item.variant.title != 'Default Title' -%}
+          <p class="byo-box-component-variant">{{ item.variant.title }}</p>
+        {%- endif -%}
+      </div>
+      <div class="byo-box-component-price">
+        <span class="byo-box-component-total">{{ item.final_line_price | money }}</span>
+      </div>
+    </div>
+
+    <div class="byo-box-component-actions">
+      <span class="byo-box-component-locked">🔗 Part of {{ bundle_title }}</span>
+    </div>
+  </div>
+
+{%- else -%}
+  {%- comment -%} Fallback for non-bundle items {%- endcomment -%}
+  <div class="byo-box-regular-item">
+    <p>Regular item: {{ item.product.title }}</p>
+  </div>
+{%- endif -%}
+
+{%- style -%}
+  /* Main Bundle Item Styles */
+  .byo-box-bundle-main {
+    border: 2px solid rgb(var(--color-button));
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    background: rgba(var(--color-button), 0.05);
+    position: relative;
+  }
+
+  .byo-box-bundle-main::before {
+    content: 'CUSTOM BYO BOX';
+    position: absolute;
+    top: -8px;
+    left: 1rem;
+    background: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .byo-box-bundle-header {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .byo-box-bundle-image img {
+    border-radius: 8px;
+    object-fit: cover;
+  }
+
+  .byo-box-bundle-info {
+    flex: 1;
+  }
+
+  .byo-box-bundle-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-bundle-description {
+    color: rgba(var(--color-foreground), 0.7);
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .byo-box-bundle-fee {
+    font-size: 18px;
+    font-weight: 600;
+    color: rgb(var(--color-button));
+  }
+
+  /* Component Item Styles */
+  .byo-box-component-item {
+    border-left: 3px solid rgba(var(--color-button), 0.3);
+    padding: 16px;
+    margin-bottom: 8px;
+    background: rgba(var(--color-foreground), 0.02);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .byo-box-component-header {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .byo-box-component-image img {
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .byo-box-component-info {
+    flex: 1;
+  }
+
+  .byo-box-component-badge {
+    background: rgba(var(--color-button), 0.1);
+    color: rgb(var(--color-button));
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  .byo-box-component-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 4px 0;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-component-details {
+    color: rgba(var(--color-foreground), 0.7);
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .byo-box-component-variant {
+    color: rgba(var(--color-foreground), 0.6);
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  .byo-box-component-total {
+    font-size: 18px;
+    font-weight: 600;
+    color: rgb(var(--color-foreground));
+  }
+
+  .byo-box-component-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .byo-box-component-locked {
+    color: rgba(var(--color-foreground), 0.6);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Mobile Responsive */
+  @media screen and (max-width: 749px) {
+    .byo-box-bundle-header,
+    .byo-box-component-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .byo-box-bundle-image,
+    .byo-box-component-image {
+      align-self: center;
+    }
+
+    .byo-box-bundle-info,
+    .byo-box-component-info {
+      text-align: center;
+    }
+  }
+
+  /* Cart Integration */
+  .cart-item--bundle .cart-item__bundle-wrapper {
+    padding: 0;
+  }
+
+  .cart-item--bundle td {
+    border: none;
+    padding: 8px 0;
+  }
+{%- endstyle -%}
